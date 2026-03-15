@@ -4,7 +4,6 @@ pipeline {
     stages {
         stage('Environment Check') {
             steps {
-                // Verify we still have Docker access
                 sh 'docker version'
                 sh 'docker compose version'
             }
@@ -13,30 +12,30 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building Docker Images...'
-                // Using "docker compose" (v2) which is what you have installed
-                sh 'docker compose build'
+                sh 'docker compose -p jenkins-test build'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running Django Tests...'
-                // Spin up a temporary container to run tests
-                sh 'docker compose run --rm web python manage.py test'
+                // Spin up isolation with "-p jenkins-test"
+                sh 'docker compose -p jenkins-test run --rm web python manage.py test'
             }
         }
 
         stage('Deploy (Scale)') {
             steps {
                 echo 'Deploying with 3 replicas...'
-                // Re-deploy and ensure 3 instances are running
+                // Use default project name for the "live" deployment
                 sh 'docker compose up -d --scale web=3'
             }
         }
 
         stage('Cleanup') {
             steps {
-                echo 'Cleaning up dangling images...'
+                echo 'Cleaning up test environment...'
+                sh 'docker compose -p jenkins-test down'
                 sh 'docker image prune -f'
             }
         }

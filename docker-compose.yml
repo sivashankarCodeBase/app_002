@@ -4,8 +4,8 @@ services:
     # container_name: django_app
     # ports:
     #   - 8000:8000
-    volumes:
-      - ./src:/app
+    # volumes:
+    #   - ./src:/app
     depends_on:
       db:
         condition: service_healthy

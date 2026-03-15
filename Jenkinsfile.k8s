@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building Docker Images...'
-                sh 'docker build -t app_002-web:latest ./src/'
+                sh 'docker build -t app_002-web:latest .'
             }
         }
 

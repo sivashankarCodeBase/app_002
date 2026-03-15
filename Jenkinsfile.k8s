@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        KUBECONFIG = '/tmp/kubeconfig'
+    }
+
     stages {
         stage('Environment Check') {
             steps {
@@ -26,7 +30,11 @@ pipeline {
         stage('Deploy (K8s)') {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
-                sh 'kubectl apply -f k8s/'
+                sh '''
+                    cp /home/jenkins/.kube/config $KUBECONFIG
+                    kubectl config set-cluster docker-desktop --server=https://host.docker.internal:6443 --insecure-skip-tls-verify=true
+                    kubectl apply -f k8s/
+                '''
                 sh 'kubectl rollout status deployment/web'
             }
         }

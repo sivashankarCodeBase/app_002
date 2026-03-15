@@ -28,7 +28,7 @@ pipeline {
             steps {
                 echo 'Deploying with 3 replicas...'
                 // Use default project name for the "live" deployment
-                sh 'docker compose up -d --scale web=3'
+                sh 'docker compose up -d --scale web=3 --build'
             }
         }
 

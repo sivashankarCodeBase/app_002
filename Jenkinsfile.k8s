@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Environment Check') {
+            steps {
+                sh 'docker version'
+                sh 'kubectl version --client'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building Docker Images...'
+                sh 'docker build -t app_002-web:latest ./src/'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running Django Tests...'
+                sh 'docker compose -p jenkins-test-k8s run --rm web python manage.py test'
+            }
+        }
+
+        stage('Deploy (K8s)') {
+            steps {
+                echo 'Deploying to Kubernetes Cluster...'
+                sh 'kubectl apply -f k8s/'
+                sh 'kubectl rollout status deployment/web'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                echo 'Cleaning up test environment...'
+                sh 'docker compose -p jenkins-test-k8s down'
+                sh 'docker image prune -f'
+            }
+        }
+    }
+}
